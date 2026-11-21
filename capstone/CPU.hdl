@@ -1,0 +1,45 @@
+// Hack CPU (Project 5). Uses the built-in ALU, ARegister, DRegister and PC.
+CHIP CPU {
+    IN inM[16], instruction[16], reset;
+    OUT outM[16], writeM, addressM[15], pc[15];
+
+    PARTS:
+    Mux16(a=instruction, b=aluOut, sel=instruction[15], out=aIn);
+    Not(in=instruction[15], out=notC);
+    And(a=instruction[15], b=instruction[5], out=writeA);
+    Or(a=notC, b=writeA, out=loadA);
+    ARegister(in=aIn, load=loadA, out=aReg, out[0..14]=addressM);
+
+    Mux16(a=aReg, b=inM, sel=instruction[12], out=aluY);
+    And(a=instruction[15], b=instruction[4], out=loadD);
+    DRegister(in=aluOut, load=loadD, out=dReg);
+    And(a=instruction[15], b=instruction[3], out=writeM);
+    ALU(x=dReg, y=aluY, zx=instruction[11], nx=instruction[10],
+        zy=instruction[9], ny=instruction[8], f=instruction[7],
+        no=instruction[6], out=aluOut, out=outM, zr=zr, ng=ng);
+
+    Not(in=ng, out=notNg);
+    Not(in=zr, out=notZr);
+    And(a=notNg, b=notZr, out=positive);
+    DMux8Way(in=true, sel[0]=instruction[2], sel[1]=instruction[1],
+        sel[2]=instruction[0], a=unused0, b=selJgt,
+        c=selJeq, d=selJge, e=selJlt, f=selJne, g=selJle, h=selJmp);
+    And(a=selJgt, b=positive, out=jgt);
+    And(a=selJeq, b=zr, out=jeq);
+    Or(a=notNg, b=zr, out=nonNegative);
+    And(a=selJge, b=nonNegative, out=jge);
+    And(a=selJlt, b=ng, out=jlt);
+    Or(a=ng, b=notZr, out=nonZero);
+    And(a=selJne, b=nonZero, out=jne);
+    Or(a=ng, b=zr, out=nonPositive);
+    And(a=selJle, b=nonPositive, out=jle);
+    And(a=selJmp, b=true, out=jmp);
+    Or(a=jgt, b=jeq, out=jump1);
+    Or(a=jge, b=jlt, out=jump2);
+    Or(a=jne, b=jle, out=jump3);
+    Or(a=jump1, b=jump2, out=jump4);
+    Or(a=jump3, b=jmp, out=jump5);
+    Or(a=jump4, b=jump5, out=jumpCond);
+    And(a=instruction[15], b=jumpCond, out=pcLoad);
+    PC(in=aReg, load=pcLoad, inc=true, reset=reset, out[0..14]=pc);
+}
