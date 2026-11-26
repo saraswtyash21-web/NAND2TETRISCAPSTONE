@@ -1,0 +1,22 @@
+CHIP Register {
+    IN in[16], load;
+    OUT out[16];
+    PARTS:
+    Mux16(a=out, b=in, sel=load, out=next);
+    DFF(in=next[0], out=out[0]);
+    DFF(in=next[1], out=out[1]);
+    DFF(in=next[2], out=out[2]);
+    DFF(in=next[3], out=out[3]);
+    DFF(in=next[4], out=out[4]);
+    DFF(in=next[5], out=out[5]);
+    DFF(in=next[6], out=out[6]);
+    DFF(in=next[7], out=out[7]);
+    DFF(in=next[8], out=out[8]);
+    DFF(in=next[9], out=out[9]);
+    DFF(in=next[10], out=out[10]);
+    DFF(in=next[11], out=out[11]);
+    DFF(in=next[12], out=out[12]);
+    DFF(in=next[13], out=out[13]);
+    DFF(in=next[14], out=out[14]);
+    DFF(in=next[15], out=out[15]);
+}
